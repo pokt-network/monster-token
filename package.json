@@ -1,0 +1,31 @@
+{
+  "name": "monster-token",
+  "version": "0.0.1",
+  "description": "An AION NFT Token used to reward players in the Monster Chase iOS app.",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "titan test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pokt-network/monster-token.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "homepage": "https://pokt.network",
+  "dependencies": {
+    "aion-web3": "^1.0.0",
+    "babel-preset-env": "^1.7.0",
+    "babel-register": "^6.26.0",
+    "chai": "^4.1.2",
+    "fs": "0.0.1-security",
+    "mocha": "^5.2.0"
+  },
+  "devDependencies": {
+    "babel-polyfill": "^6.26.0"
+  }
+}
