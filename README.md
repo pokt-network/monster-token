@@ -1,1 +1,3 @@
 # Monster Token
+
+Mastery Address: `0xa0E6dda34358cD8e987069893bBeA87F14E569a12C424986Fe77f327b31c7682`

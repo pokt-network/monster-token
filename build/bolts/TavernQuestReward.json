@@ -1,0 +1,67 @@
+{
+    "name": "TavernQuestReward",
+    "abi": [
+        {
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "constant": false,
+            "payable": false,
+            "inputs": [
+                {
+                    "name": "_tavern",
+                    "type": "address"
+                },
+                {
+                    "name": "_winner",
+                    "type": "address"
+                },
+                {
+                    "name": "_questIndex",
+                    "type": "uint128"
+                }
+            ],
+            "name": "rewardCompletion",
+            "type": "function"
+        },
+        {
+            "outputs": [
+                {
+                    "name": "",
+                    "type": "bool"
+                }
+            ],
+            "constant": false,
+            "payable": false,
+            "inputs": [
+                {
+                    "name": "_name",
+                    "type": "string"
+                },
+                {
+                    "name": "_hint",
+                    "type": "string"
+                },
+                {
+                    "name": "_maxWinners",
+                    "type": "uint128"
+                },
+                {
+                    "name": "_metadata",
+                    "type": "string"
+                },
+                {
+                    "name": "_prize",
+                    "type": "uint128"
+                }
+            ],
+            "name": "validateQuest",
+            "type": "function"
+        }
+    ],
+    "bytecode": "0x",
+    "updated": "Wed Jan 30 2019 12:19:52 GMT-0400 (Atlantic Standard Time)"
+}
