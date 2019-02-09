@@ -19,10 +19,10 @@ module.exports = {
                     password: ""
                 },
                 development: {
-                    host: "https://api.nodesmith.io/v1/aion/testnet/jsonrpc?apiKey=" + nodesmithApiKey,
-                    defaultAccount: process.env.DEFAULT_AION_ACCOUNT,
-                    password: "",
-                    privateKey: process.env.DEFAULT_AION_PK
+                    host: process.env.LOCAL_AION_HOST,
+                    defaultAccount: process.env.LOCAL_AION_DEV_ACCOUNT,
+                    password: process.env.LOCAL_AION_ACCOUNT_PASSWORD,
+                    privateKey: process.env.LOCAL_AION_ACCOUNT_PK
                 }
             }
         }
