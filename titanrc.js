@@ -10,13 +10,15 @@ module.exports = {
             networks: {
                 mainnet: {
                     host: "https://api.nodesmith.io/v1/aion/mainnet/jsonrpc?apiKey=" + nodesmithApiKey,
-                    defaultAccount: "",
-                    password: ""
+                    defaultAccount: process.env.MAINNET_AION_DEV_ACCOUNT,
+                    password: process.env.MAINNET_AION_ACCOUNT_PASSWORD,
+                    privateKey: process.env.MAINNET_AION_ACCOUNT_PK
                 },
                 testnet: {
                     host: "https://api.nodesmith.io/v1/aion/testnet/jsonrpc?apiKey=" + nodesmithApiKey,
-                    defaultAccount: "",
-                    password: ""
+                    defaultAccount: process.env.TESTNET_AION_DEV_ACCOUNT,
+                    password: process.env.TESTNET_AION_ACCOUNT_PASSWORD,
+                    privateKey: process.env.TESTNET_AION_ACCOUNT_PK
                 },
                 development: {
                     host: process.env.LOCAL_AION_HOST,
