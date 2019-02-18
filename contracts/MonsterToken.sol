@@ -1,81 +1,4 @@
-pragma solidity ^ 0.4 .15;
-
-/**
- * @title SafeMath. Credit to ZeppelinOS: https://zeppelinos.org
- * @dev Math operations with safety checks that throw on error
- */
-library SafeMath {
-
-  /**
-   * @dev Multiplies two numbers, throws on overflow.
-   */
-  function mul(uint a, uint b) internal returns(uint c) {
-    if (a == 0) {
-      return 0;
-    }
-    c = a * b;
-    assert(c / a == b);
-    return c;
-  }
-
-  /**
-   * @dev Integer division of two numbers, truncating the quotient.
-   */
-  function div(uint a, uint b) internal returns(uint) {
-    // assert(b > 0); // Solidity automatically throws when dividing by 0
-    // uint c = a / b;
-    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
-    return a / b;
-  }
-
-  /**
-   * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
-   */
-  function sub(uint a, uint b) internal returns(uint) {
-    assert(b <= a);
-    return a - b;
-  }
-
-  /**
-   * @dev Adds two numbers, throws on overflow.
-   */
-  function add(uint a, uint b) internal returns(uint c) {
-    c = a + b;
-    assert(c >= a);
-    return c;
-  }
-}
-
-/**
- * @title Ownable. Credit to ZeppelinOS: https://zeppelinos.org
- * @dev The Ownable contract has an owner address, and provides basic authorization control
- * functions, this simplifies the implementation of "user permissions".
- */
-contract Ownable {
-  address public owner;
-
-  function Ownable(address _sender) {
-    owner = _sender;
-  }
-
-  /**
-   * @dev Throws if called by any account other than the owner.
-   */
-  modifier onlyOwner() {
-    require(msg.sender == owner);
-    _;
-  }
-
-  /**
-   * @dev Allows the current owner to transfer control of the contract to a newOwner.
-   * @param newOwner The address to transfer ownership to.
-   */
-  function transferOwnership(address newOwner) public onlyOwner {
-    require(newOwner != address(0));
-    owner = newOwner;
-  }
-
-}
+pragma solidity ^ 0.4.15;
 
 /**
  * @title ERC721 Non-Fungible Token Standard basic implementation. Credit to ZeppelinOS: https://zeppelinos.org
@@ -544,114 +467,213 @@ contract ERC721Token is ERC721BasicToken {
 }
 
 /**
- * @title TavernQuestReward
+ * @title Ownable. Credit to ZeppelinOS: https://zeppelinos.org
+ * @dev The Ownable contract has an owner address, and provides basic authorization control
+ * functions, this simplifies the implementation of "user permissions".
  */
-interface TavernQuestReward {
+contract Ownable {
+  address public owner;
 
-  // Validates the parameters for a new quest
-  function validateQuest(string _name, string _hint, uint _maxWinners, string _metadata, uint _prize) public returns(bool);
+  function Ownable(address _sender) {
+    owner = _sender;
+  }
 
-  // Mint reward
-  function rewardCompletion(address _tavern, address _winner, uint _questIndex) public returns(bool);
+  /**
+   * @dev Throws if called by any account other than the owner.
+   */
+  modifier onlyOwner() {
+    require(msg.sender == owner);
+    _;
+  }
+
+  /**
+   * @dev Allows the current owner to transfer control of the contract to a newOwner.
+   * @param newOwner The address to transfer ownership to.
+   */
+  function transferOwnership(address newOwner) public onlyOwner {
+    require(newOwner != address(0));
+    owner = newOwner;
+  }
+
 }
 
 /**
- * @title Tavern
- * @dev For full implementation see: https://github.com/pokt-network/tavern-aion
+ * @title SafeMath. Credit to ZeppelinOS: https://zeppelinos.org
+ * @dev Math operations with safety checks that throw on error
  */
-interface Tavern {
-  function isWinner(address _tokenAddress, uint _questIndex, address _allegedWinner) public constant returns(bool);
-  function isClaimer(address _tokenAddress, uint _questIndex, address _allegedClaimer) public constant returns(bool);
-  function getQuestMetadata(address _tokenAddress, uint _questIndex) public constant returns(string);
+library SafeMath {
+
+  /**
+   * @dev Multiplies two numbers, throws on overflow.
+   */
+  function mul(uint a, uint b) internal returns(uint c) {
+    if (a == 0) {
+      return 0;
+    }
+    c = a * b;
+    assert(c / a == b);
+    return c;
+  }
+
+  /**
+   * @dev Integer division of two numbers, truncating the quotient.
+   */
+  function div(uint a, uint b) internal returns(uint) {
+    // assert(b > 0); // Solidity automatically throws when dividing by 0
+    // uint c = a / b;
+    // assert(a == b * c + a % b); // There is no case in which this doesn't hold
+    return a / b;
+  }
+
+  /**
+   * @dev Subtracts two numbers, throws on overflow (i.e. if subtrahend is greater than minuend).
+   */
+  function sub(uint a, uint b) internal returns(uint) {
+    assert(b <= a);
+    return a - b;
+  }
+
+  /**
+   * @dev Adds two numbers, throws on overflow.
+   */
+  function add(uint a, uint b) internal returns(uint c) {
+    c = a + b;
+    assert(c >= a);
+    return c;
+  }
 }
 
 /**
  * @title MonsterToken
  */
-contract MonsterToken is Ownable, ERC721Token, TavernQuestReward {
-  // State
-  mapping(uint => uint) internal tokenQuestIndex;
-  address internal tavernAddress;
-  address[] internal tokenOwnersIndex;
-  // Indicates this contract version
-  uint public version = 1;
+contract MonsterToken is Ownable, ERC721Token {
+    // Libraries
+    using SafeMath for uint;
 
-  // Initializer
-  function MonsterToken(address _owner, address _tavernAddress) ERC721Token("MonsterToken", "MCT") Ownable(_owner) public {
-    require(isValidAddress(_owner) == true);
-    require(isValidAddress(_tavernAddress) == true);
-    tavernAddress = _tavernAddress;
-  }
+    // Token state
+    mapping(uint => uint) internal tokenChaseIndex;
+    address[] internal tokenOwnersIndex;
 
-  // Validates the parameters for a new quest
-  function validateQuest(string _name, string _hint, uint _maxWinners, string _metadata, uint _prize) public returns(bool) {
-    return isValidString(_name) && isValidString(_hint) && _prize > 0 ? _maxWinners > 0 : true && isValidString(_metadata);
-  }
+    // Chase state
+    uint[] chaseIndices;
+    mapping (uint => string) public chaseNames;
+    mapping (uint => string) public chaseHints;
+    mapping (uint => uint) public chaseMaxWinners;
+    mapping (uint => bytes32) public chaseMerkleRoots;
+    mapping (uint => string) public chaseMerkleBodies;
+    mapping (uint => string) public chaseMetadata;
+    mapping (uint => address) public chaseCreators;
+    mapping (address => uint[]) public chasesPerCreator;
+    mapping (uint => mapping (address => bool)) public winnersPerChase;
+    mapping (uint => address[]) public winnersPerChaseIndex;
+    mapping (uint => bool) public chasesValidity;
 
-  // Mint reward
-  function rewardCompletion(address _tavern, address _winner, uint _questIndex) public returns(bool) {
-    require(isValidAddress(_winner));
-    require(isValidTavern(_tavern));
-    bool result = false;
+    // General state
+    uint public version = 1;
 
-    Tavern tavernInterface = Tavern(tavernAddress);
-    bool isWinner = tavernInterface.isWinner(this, _questIndex, _winner) == true;
-    bool canClaim = tavernInterface.isClaimer(this, _questIndex, _winner) == false;
-    if (isWinner && canClaim) {
-      _mintQuestReward(_winner, _questIndex);
-      result = true;
+    // Public interface
+
+    /**
+     *
+     */
+    function MonsterToken(address _owner) ERC721Token("MonsterToken", "MCT") Ownable(_owner) public {
+        requireValidAddress(_owner);
     }
 
-    return result;
-  }
+    /**
+     */
+    function submitChaseHeader(address _player, string _name, string _hint, uint _maxWinners, string _metadata, bytes32 _merkleRoot) public {
+        // Requirements
+        requireValidAddress(_player);
+        requireValidString(_name);
+        requireValidString(_hint);
+        requireValidString(_metadata);
+        requireValidBytes32(_merkleRoot);
 
-  function _mintQuestReward(address _winner, uint _questIndex) internal {
-    // Generate next token id
-    uint nextTokenId = allTokens.length;
+        // Calculate the next chase index
+        uint chaseIndex = chaseIndices.length;
 
-    // Mint the token
-    super._mint(_winner, nextTokenId);
-
-    // Add to owners index if not exists
-    // We check for 1 because the _mint function will increase by 1 the count
-    if (ownedTokensCount[_winner] == 1) {
-      tokenOwnersIndex.push(_winner);
+        // Insert chase header data
+        chaseCreators[chaseIndex] = _player;
+        chasesPerCreator[_player].push(chaseIndex);
+        chaseNames[chaseIndex] = _name;
+        chaseHints[chaseIndex] = _hint;
+        chaseMaxWinners[chaseIndex] = _maxWinners;
+        chaseMetadata[chaseIndex] = _metadata;
+        chaseMerkleRoots[chaseIndex] = _merkleRoot;
+        // We do this to require sending the merkle body in the function below
+        chasesValidity[chaseIndex] = false;
     }
 
-    // Set token quest index
-    _setTokenQuestIndex(nextTokenId, _questIndex);
-  }
+    /**
+     */
+    function submitChaseMerkleBody(uint _chaseIndex, string _merkleBody) public {
+        // Requirements
+        requireValidString(_merkleBody);
+        require(chasesValidity[_chaseIndex] == false);
 
-  // Sets token quest
-  function _setTokenQuestIndex(uint _tokenId, uint _questIndex) internal {
-    require(exists(_tokenId));
-    tokenQuestIndex[_tokenId] = _questIndex;
-  }
+        // Inser merkle body data
+        chaseMerkleBodies[_chaseIndex] = _merkleBody;
 
-  // Retrieves quest
-  function getTokenQuestIndex(uint _tokenId) public constant returns(uint) {
-    require(exists(_tokenId));
-    return tokenQuestIndex[_tokenId];
-  }
+        // Make the chase valid
+        chasesValidity[_chaseIndex] = true;
+    }
 
-  function isValidAddress(address _addressToCheck) internal returns(bool) {
-    return _addressToCheck != address(0);
-  }
+    /**
+     */
+    function getTokenChaseIndex(uint _tokenId) public constant returns(uint) {
+        require(exists(_tokenId));
+        return tokenChaseIndex[_tokenId];
+    }
 
-  function isValidString(string _stringToCheck) internal returns(bool) {
-    return bytes(_stringToCheck).length > 0;
-  }
+    /**
+     */
+    function getOwnersCount() public constant returns(uint) {
+        return tokenOwnersIndex.length;
+    }
 
-  function isValidTavern(address _addressToCheck) internal constant returns(bool) {
-    return _addressToCheck == tavernAddress;
-  }
+    /**
+     */
+    function getOwnerTokenCountByIndex(uint _ownerIndex) public constant returns(address, uint) {
+        address owner = tokenOwnersIndex[_ownerIndex];
+        return (owner, ownedTokensCount[owner]);
+    }
 
-  function getOwnersCount() public constant returns(uint) {
-    return tokenOwnersIndex.length;
-  }
+    // Private interface
 
-  function getOwnerTokenCountByIndex(uint _ownerIndex) public constant returns(address, uint) {
-    address owner = tokenOwnersIndex[_ownerIndex];
-    return (owner, ownedTokensCount[owner]);
-  }
+    /**
+     */
+    function _mintChaseReward(address _winner, uint _chaseIndex) internal {
+        // Generate next token id
+        uint nextTokenId = allTokens.length;
+
+        // Mint the token
+        super._mint(_winner, nextTokenId);
+
+        // Add to owners index if not exists
+        // We check for 1 because the _mint function will increase by 1 the count
+        if (ownedTokensCount[_winner] == 1) {
+        tokenOwnersIndex.push(_winner);
+        }
+
+        // Set token chase index
+        require(exists(nextTokenId));
+        tokenChaseIndex[nextTokenId] = _chaseIndex;
+    }
+
+    /**
+     */
+    function requireValidAddress(address _addressToCheck) internal {
+        require(_addressToCheck != address(0));
+    }
+
+    /**
+     */
+    function requireValidString(string _stringToCheck) internal {
+        require(bytes(_stringToCheck).length > 0);
+    }
+
+    function requireValidBytes32(bytes32 _bytesToCheck) internal {
+        require(bytes32(_bytesToCheck).length == 32);
+    }
 }
