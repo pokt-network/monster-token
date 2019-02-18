@@ -11,6 +11,9 @@ let monsterTokenSol = fs.readFileSync(`${process.cwd()}` + '/contracts/MonsterTo
     encoding: 'utf8'
 });
 
+// Constants
+let MAX_GAS = 2000000;
+
 // Test state
 let monsterTokenABI;
 let monsterTokenByteCode;
@@ -18,6 +21,31 @@ let monsterTokenAddress;
 let monsterTokenInstance;
 
 describe('MonsterToken', () => {
+
+    async function createValidChase(lat, lon, name, hint, maxWinners, metadata) {
+        let merkleTree = TestUtils.generateMerkleTree(lat, lon),
+            merkleBody = TestUtils.encodeMerkleBody(merkleTree);
+
+        let chaseCreationResultTx = await monsterTokenInstance.methods.submitChase(
+                web3.eth.defaultAccount,
+                name,
+                hint,
+                maxWinners,
+                metadata,
+                '0x' + merkleTree.getRoot().toString('hex'),
+                merkleBody
+            )
+            .send({
+                from: web3.eth.defaultAccount,
+                gas: MAX_GAS
+            })
+            .on('error', console.error);
+
+        expect(chaseCreationResultTx).to.be.ok;
+        expect(chaseCreationResultTx.cumulativeGasUsed).to.be.lessThan(MAX_GAS);
+        expect(chaseCreationResultTx.status).to.be.true;
+        return chaseCreationResultTx;
+    }
 
     it('should compile contract', async () => {
         let {
@@ -58,28 +86,25 @@ describe('MonsterToken', () => {
 
     describe('#submitChase', function () {
         it('should create a Chase with valid parameters', async function () {
-            let merkleTree = TestUtils.generateMerkleTree(40.6893, -74.0447),
-                merkleBody = TestUtils.encodeMerkleBody(merkleTree),
-                maxGas = 2000000;
+            await createValidChase(40.6893, -74.0447, 'Pirulo Hernandez', 'The father of all Pirulos', 0, 'FDFFFB,46.22333414526491,6.136932945194016,46.22333414526491,6.140530231617691,46.22693143168858,6.136932945194016,46.22693143168858,6.140530231617691');
+        }).timeout(0);
+    });
 
-            let chaseCreationResultTx = await monsterTokenInstance.methods.submitChase(
-                web3.eth.defaultAccount,
-                'Pirulo Hernandez',
-                'The father of all Pirulos',
-                0,
-                'FDFFFB,46.22333414526491,6.136932945194016,46.22333414526491,6.140530231617691,46.22693143168858,6.136932945194016,46.22693143168858,6.140530231617691',
-                '0x' + merkleTree.getRoot().toString('hex'),
-                merkleBody
-            )
-            .send({
-                from: web3.eth.defaultAccount,
-                gas: maxGas
-            })
-            .on('error', console.error);
+    describe('#getChaseHeader', function() {
+        it('should retrieve a chase creator, name, hint, maxWinners, metadata and validity', async function () {
+            let chaseHeader = await monsterTokenInstance.methods.getChaseHeader(0).call();
+            Object.keys(chaseHeader).forEach(function(key) {
+                expect(chaseHeader[key]).to.be.ok;
+            });
+        }).timeout(0);
+    });
 
-            expect(chaseCreationResultTx).to.be.ok;
-            expect(chaseCreationResultTx.cumulativeGasUsed).to.be.lessThan(maxGas);
-            expect(chaseCreationResultTx.status).to.be.true;
+    describe('#getChaseDetail', function () {
+        it('should retrieve a chase merkle root, merkle body and current winners amount', async function () {
+            let chaseDetail = await monsterTokenInstance.methods.getChaseDetail(0).call();
+            Object.keys(chaseDetail).forEach(function (key) {
+                expect(chaseDetail[key]).to.be.ok;
+            });
         }).timeout(0);
     });
 });
