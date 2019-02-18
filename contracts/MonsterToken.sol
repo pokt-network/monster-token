@@ -582,13 +582,14 @@ contract MonsterToken is Ownable, ERC721Token {
 
     /**
      */
-    function submitChaseHeader(address _player, string _name, string _hint, uint _maxWinners, string _metadata, bytes32 _merkleRoot) public {
+    function submitChase(address _player, string _name, string _hint, uint _maxWinners, string _metadata, bytes32 _merkleRoot, string _merkleBody) public {
         // Requirements
         requireValidAddress(_player);
         requireValidString(_name);
         requireValidString(_hint);
         requireValidString(_metadata);
         requireValidBytes32(_merkleRoot);
+        requireValidString(_merkleBody);
 
         // Calculate the next chase index
         uint chaseIndex = chaseIndices.length;
@@ -601,22 +602,21 @@ contract MonsterToken is Ownable, ERC721Token {
         chaseMaxWinners[chaseIndex] = _maxWinners;
         chaseMetadata[chaseIndex] = _metadata;
         chaseMerkleRoots[chaseIndex] = _merkleRoot;
-        // We do this to require sending the merkle body in the function below
-        chasesValidity[chaseIndex] = false;
+        chaseMerkleBodies[chaseIndex] = _merkleBody;
+        // Make the quest playable
+        chasesValidity[chaseIndex] = true;
     }
 
     /**
      */
-    function submitChaseMerkleBody(uint _chaseIndex, string _merkleBody) public {
-        // Requirements
-        requireValidString(_merkleBody);
-        require(chasesValidity[_chaseIndex] == false);
+    function getChaseHeader(uint _chaseIndex) public constant returns (address, string, string, uint, string, bool) {
+        return (chaseCreators[_chaseIndex], chaseNames[_chaseIndex], chaseHints[_chaseIndex], chaseMaxWinners[_chaseIndex], chaseMetadata[_chaseIndex], chasesValidity[_chaseIndex]);
+    }
 
-        // Inser merkle body data
-        chaseMerkleBodies[_chaseIndex] = _merkleBody;
-
-        // Make the chase valid
-        chasesValidity[_chaseIndex] = true;
+    /**
+     */
+    function getChaseDetail(uint _chaseIndex) public constant returns (bytes32, string, uint) {
+        return (chaseMerkleRoots[_chaseIndex], chaseMerkleBodies[_chaseIndex], winnersPerChaseIndex[_chaseIndex].length);
     }
 
     /**
