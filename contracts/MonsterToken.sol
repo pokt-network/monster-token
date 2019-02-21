@@ -668,6 +668,12 @@ contract MonsterToken is Ownable, ERC721Token {
         return (owner, ownedTokensCount[owner]);
     }
 
+    /**
+     */
+    function getChaseAmount() public constant returns(uint) {
+        return chaseIndices.length;
+    }
+
     // Private interface
 
     /**
