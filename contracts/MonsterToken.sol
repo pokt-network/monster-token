@@ -609,6 +609,29 @@ contract MonsterToken is Ownable, ERC721Token {
 
     /**
      */
+    function submitProof(address _player, uint _chaseIndex, bytes32[] _proof, bytes32 _answer, bool[] _leftOrRight) public {
+        // Check quest is valid
+        require(chasesValidity[_chaseIndex] == true);
+
+        // Avoid the same winner spamming the contract
+        require(!isWinner(_chaseIndex, _player));
+
+        // Avoid creating more winners after the max amount of tokens are minted
+        require(winnersPerChaseIndex[_chaseIndex].length < chaseMaxWinners[_chaseIndex] || chaseMaxWinners[_chaseIndex] == 0);
+
+        // Verify merkle proof
+        require(verifyProof(_leftOrRight, _proof, chaseMerkleRoots[_chaseIndex], _answer));
+
+        // Add to winners list just once
+        winnersPerChase[_chaseIndex][_player] = true;
+        winnersPerChaseIndex[_chaseIndex].push(_player);
+
+        // Mint reward
+        _mintChaseReward(_player, _chaseIndex);
+    }
+
+    /**
+     */
     function getChaseHeader(uint _chaseIndex) public constant returns (address, string, string, uint, string, bool) {
         return (chaseCreators[_chaseIndex], chaseNames[_chaseIndex], chaseHints[_chaseIndex], chaseMaxWinners[_chaseIndex], chaseMetadata[_chaseIndex], chasesValidity[_chaseIndex]);
     }
@@ -617,6 +640,12 @@ contract MonsterToken is Ownable, ERC721Token {
      */
     function getChaseDetail(uint _chaseIndex) public constant returns (bytes32, string, uint) {
         return (chaseMerkleRoots[_chaseIndex], chaseMerkleBodies[_chaseIndex], winnersPerChaseIndex[_chaseIndex].length);
+    }
+
+    /**
+     */
+    function isWinner(uint _chaseIndex, address _allegedWinner) public constant returns (bool) {
+        return winnersPerChase[_chaseIndex][_allegedWinner];
     }
 
     /**
@@ -653,7 +682,7 @@ contract MonsterToken is Ownable, ERC721Token {
         // Add to owners index if not exists
         // We check for 1 because the _mint function will increase by 1 the count
         if (ownedTokensCount[_winner] == 1) {
-        tokenOwnersIndex.push(_winner);
+            tokenOwnersIndex.push(_winner);
         }
 
         // Set token chase index
@@ -675,5 +704,31 @@ contract MonsterToken is Ownable, ERC721Token {
 
     function requireValidBytes32(bytes32 _bytesToCheck) internal {
         require(bytes32(_bytesToCheck).length == 32);
+    }
+
+    /*
+    * @dev Verifies a Merkle proof proving the existence of a leaf in a Merkle tree. Assumes that each pair of leaves
+    * and each pair of pre-images is sorted.
+    * @param _leftOrRight tells the contract the right order to concatenate hashes to produce the final proof
+    * @param _proof Merkle proof containing sibling hashes on the branch from the leaf to the root of the Merkle tree
+    * @param _root Merkle root
+    * @param _leaf Leaf of Merkle tree
+    */
+    function verifyProof(bool[] _leftOrRight, bytes32[] _proof, bytes32 _root, bytes32 _leaf) internal returns (bool) {
+        require(_proof.length == _leftOrRight.length);
+        bytes32 computedHash = _leaf;
+
+        for (uint i = 0; i < _proof.length; i++) {
+            bytes32 proofElement = _proof[i];
+            bool order = _leftOrRight[i];
+            if (order == false) {
+                computedHash = keccak256(computedHash, proofElement);
+            } else {
+                computedHash = keccak256(proofElement, computedHash);
+            }
+        }
+
+        // Check if the computed hash (root) is equal to the provided root
+        return computedHash == _root;
     }
 }

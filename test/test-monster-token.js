@@ -107,5 +107,32 @@ describe('MonsterToken', () => {
             });
         }).timeout(0);
     });
+
+    describe('#submitProof', function() {
+        it('should submit proof for an already existing chase', async function () {
+            let merkleBody = await monsterTokenInstance.methods.chaseMerkleBodies(0).call(),
+                playerSubmission = TestUtils.generatePlayerSubmission(40.6894, -74.0447, merkleBody);
+
+            let submitProofTx = await monsterTokenInstance.methods.submitProof(
+                web3.eth.defaultAccount,
+                0,
+                playerSubmission.proof,
+                playerSubmission.answer,
+                playerSubmission.order
+            ).send({
+                from: web3.eth.defaultAccount,
+                gas: MAX_GAS
+            });
+
+            let isWinner = await monsterTokenInstance.methods.isWinner(0, web3.eth.defaultAccount).call(),
+                tokensOwned = await monsterTokenInstance.methods.balanceOf(web3.eth.defaultAccount).call();
+
+            expect(submitProofTx.status).to.be.true;
+            expect(submitProofTx.gasUsed).to.be.lessThan(MAX_GAS);
+            expect(submitProofTx.events.Transfer).to.be.ok;
+            expect(isWinner).to.be.true;
+            expect(tokensOwned).to.equal('1');
+        }).timeout(0);
+    });
 });
 
