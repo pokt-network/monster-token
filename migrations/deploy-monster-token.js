@@ -21,18 +21,22 @@ async function deployContract() {
         from: web3.eth.defaultAccount,
         data: MonsterTokenContractBuild.bytecode
     });
-    const tavernAddress = process.env.AION_TAVERN_ADDRESS;
 
     if (!MonsterToken) {
         throw new Error('Error parsing the Tavern contract build file');
     }
 
-    if (!tavernAddress) {
-        throw new Error('Error parsing Tavern Address AION_TAVERN_ADDRESS');
-    }
+    const monsterTokenInstanceGasEstimate = await MonsterToken.deploy({
+        arguments: [web3.eth.defaultAccount]
+    }).estimateGas({
+        from: web3.eth.defaultAccount,
+        gas: 5000000
+    });
+
+    console.log("Gas estimate: " + monsterTokenInstanceGasEstimate);
 
     const monsterTokenInstance = await MonsterToken.deploy({
-        arguments: [web3.eth.defaultAccount, tavernAddress]
+        arguments: [web3.eth.defaultAccount]
     }).send({
         from: web3.eth.defaultAccount,
         gas: 5000000
