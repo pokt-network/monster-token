@@ -2,4 +2,4 @@
 An AION Non-Fungible Token (NFT) that conforms to the `TavernQuestReward` interface for use on the Monster Chase app. For more information on Tavern AION please visit the [Tavern AION repo](https://github.com/pokt-network/tavern).
 
 Version `1`.
-Mastery Address: `0xA012D37f406Fa8E87F4e2fDf4610dA2473f4f7d14FD4b95952355759F075F027`.
+Mastery Address: `0xa01F1A6268C9B3636Ac82D907b5F80b9eA7Bb7D3DB85e49858AB612cC4670Cb9`.
