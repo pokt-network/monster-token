@@ -75,6 +75,7 @@ describe('MonsterToken', () => {
         monsterTokenAddress = monsterTokenInstance.options.address;
         expect(monsterTokenInstance).to.not.be.null;
         expect(monsterTokenAddress).to.not.be.null;
+        console.log("CONTRACT ADDRESS:" + monsterTokenAddress);
     }).timeout(0);
 
     describe('#constructor', function () {
@@ -86,7 +87,9 @@ describe('MonsterToken', () => {
 
     describe('#submitChase', function () {
         it('should create a Chase with valid parameters', async function () {
-            await createValidChase(40.6893, -74.0447, 'Pirulo Hernandez', 'The father of all Pirulos', 0, 'FDFFFB,46.22333414526491,6.136932945194016,46.22333414526491,6.140530231617691,46.22693143168858,6.136932945194016,46.22693143168858,6.140530231617691');
+            await createValidChase(18.4513, -69.9563, 'Pirulo Hernandez', 'The father of all Pirulos', 0, 'FDFFFB,46.22333414526491,6.136932945194016,46.22333414526491,6.140530231617691,46.22693143168858,6.136932945194016,46.22693143168858,6.140530231617691');
+            var chaseAmount = await monsterTokenInstance.methods.getChaseAmount().call();
+            expect(chaseAmount).to.be.equal('1');
         }).timeout(0);
     });
 
@@ -111,7 +114,11 @@ describe('MonsterToken', () => {
     describe('#submitProof', function() {
         it('should submit proof for an already existing chase', async function () {
             let merkleBody = await monsterTokenInstance.methods.chaseMerkleBodies(0).call(),
-                playerSubmission = TestUtils.generatePlayerSubmission(40.6894, -74.0447, merkleBody);
+                playerSubmission = TestUtils.generatePlayerSubmission(18.4513, -69.9563, merkleBody);
+
+            console.log(playerSubmission.proof);
+            console.log(playerSubmission.answer);
+            console.log(playerSubmission.order);
 
             let submitProofTx = await monsterTokenInstance.methods.submitProof(
                 web3.eth.defaultAccount,

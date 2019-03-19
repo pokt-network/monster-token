@@ -605,6 +605,9 @@ contract MonsterToken is Ownable, ERC721Token {
         chaseMerkleBodies[chaseIndex] = _merkleBody;
         // Make the quest playable
         chasesValidity[chaseIndex] = true;
+
+        // Add to indices
+        chaseIndices.push(chaseIndex);
     }
 
     /**
@@ -705,11 +708,11 @@ contract MonsterToken is Ownable, ERC721Token {
     /**
      */
     function requireValidString(string _stringToCheck) internal {
-        require(bytes(_stringToCheck).length > 0);
+        require(_stringToCheck.length > 0);
     }
 
     function requireValidBytes32(bytes32 _bytesToCheck) internal {
-        require(bytes32(_bytesToCheck).length == 32);
+        require(_bytesToCheck.length == 32);
     }
 
     /*
